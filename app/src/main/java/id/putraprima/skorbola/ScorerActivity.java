@@ -20,7 +20,7 @@ public class ScorerActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_scorer);
-        playerName = findViewById(R.id.editText);
+        //playerName = findViewById(R.id.name);
 
         Bundle extras = getIntent().getExtras();
 
