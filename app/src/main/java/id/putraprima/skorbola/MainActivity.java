@@ -1,8 +1,5 @@
 package id.putraprima.skorbola;
 
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
@@ -14,95 +11,132 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
+
 import java.io.IOException;
+import model.Match;
 
 public class MainActivity extends AppCompatActivity {
 
-    ImageView homeImage,awayImage;
-    EditText homeText,awayText;
-    Uri imageUri1;
-    Uri imageUri2;
-    Bitmap bitmap1;
-    Bitmap bitmap2;
-    private static final String TAG = MainActivity.class.getCanonicalName();
+    public static final String TAG = "soccer";
+    public static final String DATA_KEY = "data";
+    public static final String SCORE_KEY = "score";
+
+    EditText homeTeam;
+    ImageView homeLogo;
+
+    EditText awayTeam;
+    ImageView awayLogo;
+
+    Uri homeUri = null;
+    Uri awayUri = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        //TODO
-        //Fitur Main Activity
-        //1. Validasi Input Home Team
-        //2. Validasi Input Away Team
-        //3. Ganti Logo Home Team
-        //4. Ganti Logo Away Team
-        //5. Next Button Pindah Ke MatchActivity
 
-        homeImage = findViewById(R.id.home_logo);
-        awayImage = findViewById(R.id.away_logo);
-        homeText = findViewById(R.id.home_team);
-        awayText = findViewById(R.id.away_team);
+        homeTeam = findViewById(R.id.home_team);
+        homeLogo = findViewById(R.id.home_logo);
+
+        awayTeam = findViewById(R.id.away_team);
+        awayLogo = findViewById(R.id.away_logo);
+    }
+
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (resultCode == RESULT_CANCELED) {
+            return;
+        }
+        if (requestCode == 1) {
+            if (data != null) {
+                try {
+                    homeUri = data.getData();
+                    Bitmap bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), homeUri);
+                    homeLogo.setImageBitmap(bitmap);
+                } catch (IOException e) {
+                    Toast.makeText(this, "Can't load image", Toast.LENGTH_SHORT).show();
+                    Log.e(TAG, e.getMessage());
+                }
+            }
+        } else if(requestCode == 2){
+            if (data != null) {
+                try {
+                    awayUri = data.getData();
+                    Bitmap bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), awayUri);
+                    awayLogo.setImageBitmap(bitmap);
+                } catch (IOException e) {
+                    Toast.makeText(this, "Can't load image", Toast.LENGTH_SHORT).show();
+                    Log.e(TAG, e.getMessage());
+                }
+            }
+        }
+    }
+
+    public void handleNext(View view) {
+        int errorCount = 4;
+        String home = homeTeam.getText().toString().trim();
+        String away = awayTeam.getText().toString().trim();
+        Intent intent = new Intent(this, MatchActivity.class);
+
+        if(checkHome(home)){
+            errorCount -= 1;
+        }
+
+        if(checkAway(away)){
+            errorCount -= 1;
+        }
+
+        if(homeUri != null){
+            errorCount -= 1;
+        }else{
+            handlelogohome(view);
+            Toast.makeText(this, "Tambahkan gambar tim "+ home +" dulu ya!", Toast.LENGTH_SHORT).show();
+        }
+
+        if(awayUri != null){
+            errorCount -= 1;
+        }else{
+            handlelogoaway(view);
+            Toast.makeText(this, "Tambahkan gambar tim "+ away +" dulu ya!", Toast.LENGTH_SHORT).show();
+        }
+
+        if(errorCount == 0){
+            Match matchData = new Match(home, homeUri, away, awayUri,0 ,0);
+            intent.putExtra(DATA_KEY, matchData);
+            startActivity(intent);
+        }
+
+        Log.d("count", "This need"+ errorCount);
+
+    }
+
+    private boolean checkAway(String away) {
+        if(away.isEmpty()){
+            awayTeam.setError("Please fill home team name");
+            return false;
+        }else{
+            return true;
+        }
+    }
+
+    private boolean checkHome(String home) {
+        if(home.isEmpty()){
+            homeTeam.setError("Please fill away team name");
+            return false;
+        }else{
+            return true;
+        }
     }
 
     public void handlelogohome(View view) {
         Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-        startActivityForResult(intent,1);
+        startActivityForResult(intent, 1);
     }
 
     public void handlelogoaway(View view) {
         Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-        startActivityForResult(intent,2);
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-
-        if(resultCode == RESULT_CANCELED){
-            return;
-        }
-
-        if(requestCode == 1){
-            if(data != null){
-                try {
-                    imageUri1 = data.getData();
-                    bitmap1 = MediaStore.Images.Media.getBitmap(this.getContentResolver(), imageUri1);
-                    homeImage.setImageBitmap(bitmap1);
-                }catch (IOException e){
-                    Toast.makeText(this,"Can't Load Image", Toast.LENGTH_SHORT).show();
-                    Log.e(TAG, e.getMessage());
-                }
-            }
-        }else if(requestCode == 2){
-            if(data != null){
-                try {
-                    imageUri2 = data.getData();
-                    bitmap2 = MediaStore.Images.Media.getBitmap(this.getContentResolver(), imageUri2);
-                    awayImage.setImageBitmap(bitmap2);
-                }catch (IOException e){
-                    Toast.makeText(this,"Can't Load Image",Toast.LENGTH_SHORT).show();
-                    Log.e(TAG, e.getMessage());
-                }
-            }
-        }
-    }
-    public void handleNext(View view) {
-            String inputHome = homeText.getText().toString();
-            String inputAway = awayText.getText().toString();
-
-            if(!inputAway.equals("") && !inputHome.equals("")){
-                if(bitmap1!= null && bitmap2 != null) {
-                    Intent intent = new Intent(this, MatchActivity.class);
-                    intent.putExtra("inputHome", inputHome);
-                    intent.putExtra("inputAway", inputAway);
-                    intent.putExtra("logoHome", imageUri1.toString());
-                    intent.putExtra("logoAway", imageUri2.toString());
-                    startActivity(intent);
-                }else {
-                    Toast.makeText(this, "Lengkapi Data Terlebih dahulu!!", Toast.LENGTH_SHORT).show();
-                }
-            }else {
-                Toast.makeText(this, "Lengkapi Data Terlebih dahulu!!", Toast.LENGTH_SHORT).show();
-            }
+        startActivityForResult(intent, 2);
     }
 }

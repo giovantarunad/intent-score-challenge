@@ -5,128 +5,102 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
-
-import java.io.IOException;
+import android.widget.Toast;
+import model.Match;
 
 public class MatchActivity extends AppCompatActivity {
-    private TextView homeName;
-    private TextView awayName;
-    private TextView awayScore;
-    private TextView homeScore;
-    private ImageView logohome, logoaway;
-    Uri uri1;
-    Uri uri2;
-    Bitmap bitmap1;
-    Bitmap bitmap2;
-    String homeTeam,message,result;
-    String awayTeam;
-    private int scoreHome;
-    private int scoreAway;
-    String scorerName = "";
-    String homeGoals = "";
-    String awayGoals = "";
+    public static final String DATA_KEY = "data";
+    public static final String ADD_KEY = "add";
+    private static final String TIME_KEY = "time";
+
+    TextView tvScoreHome, tvGoalHome;
+    TextView tvScoreAway, tvGoalAway;
+    TextView tvHome;
+    TextView tvAway;
+
+    ImageView ivHome;
+    ImageView ivAway;
+
+    Match match;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_match);
-        homeName = findViewById(R.id.txt_home);
-        awayName = findViewById(R.id.txt_away);
-        logohome = findViewById(R.id.home_logo);
-        logoaway = findViewById(R.id.away_logo);
-        awayScore = findViewById(R.id.score_away);
-        homeScore = findViewById(R.id.score_home);
+        tvHome = findViewById(R.id.txt_home);
+        tvAway = findViewById(R.id.txt_away);
+        tvGoalHome = findViewById(R.id.txt_home_last);
+        tvGoalAway = findViewById(R.id.txt_away_last);
+        tvScoreHome = findViewById(R.id.score_home);
+        tvScoreAway = findViewById(R.id.score_away);
+        ivHome = findViewById(R.id.home_logo);
+        ivAway = findViewById(R.id.away_logo);
+        initData();
+    }
 
-        //TODO
-        //1.Menampilkan detail match sesuai data dari main activity
-        //2.Tombol add score menambahkan memindah activity ke scorerActivity dimana pada scorer activity di isikan nama pencetak gol
-        //3.Dari activity scorer akan mengirim kembali ke activity matchactivity otomatis nama pencetak gol dan skor bertambah +1
-        //4.Tombol Cek Result menghitung pemenang dari kedua tim dan mengirim nama pemenang beserta nama pencetak gol ke ResultActivity, jika seri di kirim text "Draw",
+    private void initData() {
         Bundle extras = getIntent().getExtras();
-        homeTeam = extras.getString("inputHome");
-        awayTeam = extras.getString("inputAway");
-
+        match = getIntent().getParcelableExtra(DATA_KEY);
         if (extras != null) {
-            // TODO: display value here
-
-            uri1 = Uri.parse(extras.getString("logoHome"));
-            uri2 = Uri.parse(extras.getString("logoAway"));
-            bitmap1 = null;
-            bitmap2 = null;
-
+            tvHome.setText(match.getHomeTeam());
+            tvAway.setText(match.getAwayTeam());
+            tvScoreHome.setText(String.valueOf(match.getHomeScore()));
+            tvScoreAway.setText(String.valueOf(match.getAwayScore()));
+            Bitmap bitmapHome = null;
+            Bitmap bitmapAway = null;
             try {
-                bitmap1 = MediaStore.Images.Media.getBitmap(this.getContentResolver(), uri1);
-            } catch (IOException e) {
-                e.printStackTrace();
+                bitmapHome = MediaStore.Images.Media.getBitmap(this.getContentResolver(), match.getHomeLogo());
+                bitmapAway = MediaStore.Images.Media.getBitmap(this.getContentResolver(), match.getAwayLogo());
+            } catch (Exception e) {
+                Toast.makeText(this, "Failed to load images", Toast.LENGTH_SHORT).show();
             }
-
-            try {
-                bitmap2 = MediaStore.Images.Media.getBitmap(this.getContentResolver(), uri2);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-
-            homeName.setText(homeTeam);
-            awayName.setText(awayTeam);
-            logohome.setImageBitmap(bitmap1);
-            logoaway.setImageBitmap(bitmap2);
+            ivHome.setImageBitmap(bitmapHome);
+            ivAway.setImageBitmap(bitmapAway);
         }
+    }
+
+    public void addHomeScore(View view) {
+        Intent intent = new Intent(this, ScorerActivity.class);
+        startActivityForResult(intent, 1);
+    }
+
+    public void addAwayScore(View view) {
+        Intent intent = new Intent(this, ScorerActivity.class);
+        startActivityForResult(intent, 2);
+    }
+
+    public void submitCheck(View view) {
+        Intent intent = new Intent(this, ResultActivity.class);
+        intent.putExtra(DATA_KEY, match);
+        startActivity(intent);
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (resultCode == 0) {
+        if (resultCode == RESULT_CANCELED) {
             return;
         }
-        if (requestCode == 1) {
-            homeGoals = data.getStringExtra("homeGoalers") + ", " + homeGoals;
-            scoreHome = data.getIntExtra("scoreHome", 0);
-            homeScore.setText(String.valueOf(scoreHome));
-
-        } else if (requestCode == 2) {
-            awayGoals = data.getStringExtra("awayGoalers") + ", " + awayGoals;
-            scoreAway = data.getIntExtra("scoreAway", 0);
-            awayScore.setText(String.valueOf(scoreAway));
-        }
-    }
-    public void ScoreHomeHandle(View view){
-        Intent intent = new Intent(this,ScorerActivity.class);
-        intent.putExtra("key",1);
-        intent.putExtra("dataHome",scoreHome);
-        startActivityForResult(intent,1);
-    }
-    public void scoreAwayHandle(View view){
-        Intent intent = new Intent(this,ScorerActivity.class);
-        intent.putExtra("key",2);
-        intent.putExtra("dataAway",scoreAway);
-        startActivityForResult(intent,2);
-    }
-
-    public void handleresult(View view) {
-            if (scoreHome > scoreAway){
-                result = String.valueOf(scoreHome)  + " - " + String.valueOf(scoreAway);
-                message = homeTeam + " WIN";
-                scorerName = homeGoals;
-            }else if(scoreHome < scoreAway){
-                result = String.valueOf(scoreHome)  + " - " + String.valueOf(scoreAway);
-                message = awayTeam + " WIN";
-                scorerName = awayGoals;
-            }else if(scoreHome == scoreAway){
-                result = String.valueOf(scoreHome)  + " - " + String.valueOf(scoreAway);
-                message = "DRAW";
-                scorerName = "";
+        if(requestCode == 1){
+            if(resultCode == RESULT_OK){
+                match.addHomeScore(data.getStringExtra(ADD_KEY), data.getStringExtra(TIME_KEY));
+                tvScoreHome.setText(String.valueOf(match.getHomeScore()));
+                tvGoalHome.setText(match.homeScorer());
+                Log.d("who?", "scorer is " + match.getHomeScorer());
             }
-            Intent intent = new Intent(this, ResultActivity.class);
-            intent.putExtra("result",result);
-            intent.putExtra("messages", message);
-            intent.putExtra("scorer",scorerName);
-            startActivity(intent);
+        }else if(requestCode == 2){
+            if(resultCode == RESULT_OK) {
+                match.addAwayScore(data.getStringExtra(ADD_KEY), data.getStringExtra(TIME_KEY));
+                tvScoreAway.setText(String.valueOf(match.getAwayScore()));
+                tvGoalAway.setText(match.awayScorer());
+                Log.d("who?", "scorer is " + match.getHomeScorer());
+            }
         }
     }
+}

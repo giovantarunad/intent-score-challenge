@@ -4,57 +4,30 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
-import android.widget.Toast;
+
+import model.Match;
 
 public class ScorerActivity extends AppCompatActivity {
-
-    EditText playerName;
-    int key;
-    int scoreHome;
-    int scoreAway;
-    String nameField;
+    public static final String ADD_KEY = "add";
+    public static final String TIME_KEY = "time";
+    EditText scorer,time;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_scorer);
-        //playerName = findViewById(R.id.name);
-
-        Bundle extras = getIntent().getExtras();
-
-        if (extras != null) {
-            key = extras.getInt("key");
-            scoreHome = extras.getInt("dataHome");
-            scoreAway = extras.getInt("dataAway");
-        }
+        scorer = findViewById(R.id.et_scorer);
+        time = findViewById(R.id.et_time);
     }
 
-    public void hanldeOke(View view) {
-        nameField = playerName.getText().toString();
-        if (nameField.equals("")) {
-            Toast.makeText(this, "Masukkan nama pemain!!", Toast.LENGTH_SHORT).show();
-        }
-        else{
-            if (key == 1) {
-                scoreHome += 1;
-                nameField = playerName.getText().toString();
-                Intent intent = new Intent();
-                intent.putExtra("homeGoalers", nameField);
-                intent.putExtra("scoreHome", scoreHome);
-                System.out.println(nameField);
-                setResult(1, intent);
-                finish();
-            } else if (key == 2) {
-                scoreAway += 1;
-                nameField = playerName.getText().toString();
-                Intent intent = new Intent();
-                intent.putExtra("awayGoalers", nameField);
-                intent.putExtra("scoreAway", scoreAway);
-                setResult(2, intent);
-                finish();
-            }
-        }
+    public void submitScorer(View view) {
+        Intent intent = new Intent();
+        intent.putExtra(ADD_KEY, scorer.getText().toString());
+        intent.putExtra(TIME_KEY, time.getText().toString());
+        setResult(RESULT_OK, intent);
+        finish();
     }
 }
