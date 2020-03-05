@@ -12,7 +12,8 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
-import model.Match;
+
+import id.putraprima.skorbola.Match;
 
 public class MatchActivity extends AppCompatActivity {
     public static final String DATA_KEY = "data";

@@ -1,5 +1,8 @@
 package id.putraprima.skorbola;
 
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
+
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
@@ -11,11 +14,9 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
 
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
-
 import java.io.IOException;
-import model.Match;
+
+import id.putraprima.skorbola.Match;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -74,7 +75,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    public void handleNext(View view) {
+    public void SubmitTeam(View view) {
         int errorCount = 4;
         String home = homeTeam.getText().toString().trim();
         String away = awayTeam.getText().toString().trim();
@@ -91,14 +92,14 @@ public class MainActivity extends AppCompatActivity {
         if(homeUri != null){
             errorCount -= 1;
         }else{
-            handlelogohome(view);
+            SubmitHomeImage(view);
             Toast.makeText(this, "Tambahkan gambar tim "+ home +" dulu ya!", Toast.LENGTH_SHORT).show();
         }
 
         if(awayUri != null){
             errorCount -= 1;
         }else{
-            handlelogoaway(view);
+            SubmitAwayImage(view);
             Toast.makeText(this, "Tambahkan gambar tim "+ away +" dulu ya!", Toast.LENGTH_SHORT).show();
         }
 
@@ -130,12 +131,12 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    public void handlelogohome(View view) {
+    public void SubmitHomeImage(View view) {
         Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
         startActivityForResult(intent, 1);
     }
 
-    public void handlelogoaway(View view) {
+    public void SubmitAwayImage(View view) {
         Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
         startActivityForResult(intent, 2);
     }

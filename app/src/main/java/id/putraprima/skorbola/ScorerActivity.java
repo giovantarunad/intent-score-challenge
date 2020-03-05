@@ -8,7 +8,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 
-import model.Match;
+import id.putraprima.skorbola.Match;
 
 public class ScorerActivity extends AppCompatActivity {
     public static final String ADD_KEY = "add";

@@ -8,7 +8,7 @@ import android.widget.TextView;
 
 import java.util.ArrayList;
 
-import model.Match;
+import id.putraprima.skorbola.Match;
 
 public class ResultActivity extends AppCompatActivity {
 
@@ -19,8 +19,8 @@ public class ResultActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_result);
-        tvWinner = findViewById(R.id.tv_winner);
-        tvList = findViewById(R.id.tv_list);
+        tvWinner = findViewById(R.id.textView);
+        tvList = findViewById(R.id.textView);
 
         Bundle extras = getIntent().getExtras();
         Match match = getIntent().getParcelableExtra(DATA_KEY);
